@@ -20,7 +20,10 @@ import re
 import sys
 import urllib
 import urllib2
-from xml.etree import ElementTree
+try:
+    from xml.etree import cElementTree as ET
+except ImportError:
+    from xml.etree import ElementTree as ET
 
 import suds.client
 import suds.mx.literal
@@ -563,7 +566,7 @@ class BatchJobHelperBase(object):
       if operation_type is None:
         raise ValueError('No xsi_type specified for the operations.')
       operations.attrib['xsi:type'] = operation_type.text
-    operations_xml = ''.join([ElementTree.tostring(operations)
+    operations_xml = ''.join([ET.tostring(operations)
                               for operations in mutate])
     return operations_xml
 
@@ -604,7 +607,7 @@ class BatchJobHelperBase(object):
     Raises:
       AttributeError: if the provided XML isn't from AdWords.
     """
-    root = ElementTree.fromstring(raw_request_xml)
+    root = ET.fromstring(raw_request_xml)
     return root.find('{http://schemas.xmlsoap.org/soap/envelope/}Body').find(
         '%smutate' % self._adwords_namespace)
 
@@ -1167,13 +1170,13 @@ class ReportDownloader(ReportDownloaderBase):
       content = content.decode()
     if 'reportDownloadError' in content:
       try:
-        tree = ElementTree.fromstring(content)
+        tree = ET.fromstring(content)
         return googleads.errors.AdWordsReportBadRequestError(
             tree.find('./ApiError/type').text,
             tree.find('./ApiError/trigger').text,
             tree.find('./ApiError/fieldPath').text,
             error.code, error, content)
-      except ElementTree.ParseError:
+      except ET.ParseError:
         pass
     return googleads.errors.AdWordsReportError(
         error.code, error, content)

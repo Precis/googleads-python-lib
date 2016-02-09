@@ -102,7 +102,7 @@ extra_params = {}
 if sys.version_info[0] == 3:
   extra_params['use_2to3'] = True
 
-setup(name='googleads',
+setup(name='googleads-precis',
       version=GetVersion(),
       description='Google Ads Python Client Library',
       author='Mark Saniscalchi',

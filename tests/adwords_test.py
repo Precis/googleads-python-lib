@@ -24,7 +24,10 @@ import tempfile
 import unittest
 import urllib
 import urllib2
-from xml.etree import ElementTree
+try:
+    from xml.etree import cElementTree as ET
+except ImportError:
+    from xml.etree import ElementTree as ET
 
 
 import googleads.adwords
@@ -477,10 +480,10 @@ class BatchJobUploadRequestBuilderTest(unittest.TestCase):
     raw_xml = self.request_builder._GenerateRawRequestXML(operations)
     operations_xml = self.request_builder._ExtractOperations(raw_xml)
     # Put operations in a format that allows us to easily verify the behavior.
-    ElementTree.register_namespace(
+    ET.register_namespace(
         'xsi', 'http://www.w3.org/2001/XMLSchema-instance')
     # Need to declare xsi for ElementTree to parse operations properly.
-    body = ElementTree.fromstring(
+    body = ET.fromstring(
         '<body xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">%s'
         '</body>' % operations_xml)
     self.assertTrue(body.tag == 'body')
@@ -502,7 +505,7 @@ class BatchJobUploadRequestBuilderTest(unittest.TestCase):
     """Tests whether namespaces have been removed."""
     operations_amount = 5
     ops = self.GenerateCampaignCriterionOperations(operations_amount)
-    root = ElementTree.fromstring(self.request_builder._GenerateRawRequestXML(
+    root = ET.fromstring(self.request_builder._GenerateRawRequestXML(
         ops))
     body = root.find('{%s}Body' % self.ENVELOPE_NS)
     mutate = body.find('{%s}mutate' % self.request_builder._adwords_endpoint)
@@ -553,7 +556,7 @@ class BatchJobUploadRequestBuilderTest(unittest.TestCase):
     operations_amount = 1
     ops = self.GenerateBudgetOperations(operations_amount)
 
-    root = ElementTree.fromstring(
+    root = ET.fromstring(
         self.request_builder._GenerateRawRequestXML(ops))
     self.assertTrue(len(root) == 2)
     body = root.find('{%s}Body' % self.ENVELOPE_NS)
@@ -604,7 +607,7 @@ class BatchJobUploadRequestBuilderTest(unittest.TestCase):
     operations_amount = 5
     ops = self.GenerateBudgetOperations(operations_amount)
 
-    root = ElementTree.fromstring(
+    root = ET.fromstring(
         self.request_builder._GenerateRawRequestXML(ops))
     self.assertTrue(len(root) == 2)
     body = root.find('{%s}Body' % self.ENVELOPE_NS)
@@ -652,7 +655,7 @@ class BatchJobUploadRequestBuilderTest(unittest.TestCase):
     operations_amount = 1
     ops = self.GenerateUnicodeBudgetOperations(operations_amount)
 
-    root = ElementTree.fromstring(
+    root = ET.fromstring(
         self.request_builder._GenerateRawRequestXML(ops))
     self.assertTrue(len(root) == 2)
     body = root.find(u'{%s}Body' % self.ENVELOPE_NS)
@@ -864,7 +867,7 @@ class BatchJobUploadRequestBuilderTest(unittest.TestCase):
 
   def testGetRawOperationsFromNotXMLRequest(self):
     """Test whether non-XML input raises an Exception."""
-    self.assertRaises(ElementTree.ParseError,
+    self.assertRaises(ET.ParseError,
                       self.request_builder._GetRawOperationsFromXML,
                       self.NOT_API_REQUEST)
 
